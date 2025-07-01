@@ -4,8 +4,8 @@ import type { Expense } from "../model/Expense";
 
 const useExpenses = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [error, setErrors] = useState(null);
-  const [isLoading, setLoader] = useState(false);
+  const [error, setErrors] = useState<string>("");
+  const [isLoading, setLoader] = useState<boolean>(false);
 
   useEffect(() => {
     setLoader(true);
