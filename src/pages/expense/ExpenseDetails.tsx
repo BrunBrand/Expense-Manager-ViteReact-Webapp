@@ -3,17 +3,47 @@ import CurrencyUtils from "../../utils/CurrencyUtils";
 import DateUtils from "../../utils/DateUtils";
 
 import useExpenseById from "../../hooks/useExpenseById";
+import { useState } from "react";
+import ConfirmDialog from "../../components/ConfirmDialog";
+import { deleteExpenseById } from "../../services/expense-service";
 
 const ExpenseDetails = () => {
   const { expenseId } = useParams();
-  const { expense, errors, isLoading } = useExpenseById(expenseId);
+  const [showDialog, setShowDialog] = useState<boolean>(false);
+
+  if (!expenseId) return <p className="text-danger">Invalid Expense Id</p>;
+
+  const { expense, errors, isLoading, setIsLoading, setErrors } =
+    useExpenseById(expenseId);
+
+  const handleDeleteCancel = () => {
+    setShowDialog(false);
+  };
+  const handleDeleteConfirm = () => {
+    setIsLoading(true);
+    deleteExpenseById(expenseId)
+      .then((response) => console.log(response))
+      .catch((error) => {
+        console.log(error);
+        setErrors(error);
+      })
+      .finally(() => {
+        setIsLoading(false);
+        setShowDialog(false);
+      });
+  };
 
   return (
     <div className="container mt-2">
       {isLoading && <p>Loading...</p>}
       {errors && <p className="text-danger">{errors}</p>}
       <div className="d-flex flex-row-reverse mv-2">
-        <button className="btn btn-sm btn-danger">Delete</button>
+        <button
+          className="btn btn-sm btn-danger"
+          onClick={() => setShowDialog(true)}
+        >
+          Delete
+        </button>
         <button className="btn btn-sm btn-warning mx-2">Edit</button>
         <Link className="btn btn-sm btn-secondary" to="/">
           Back
@@ -47,6 +77,13 @@ const ExpenseDetails = () => {
           </table>
         </div>
       </div>
+      <ConfirmDialog
+        title="Confirm Delete"
+        message="Sure you want to delete this item"
+        show={showDialog}
+        onCancel={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 };
