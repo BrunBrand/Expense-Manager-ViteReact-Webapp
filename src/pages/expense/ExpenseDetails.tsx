@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import CurrencyUtils from "../../utils/CurrencyUtils";
 import DateUtils from "../../utils/DateUtils";
 
@@ -8,6 +8,7 @@ import ConfirmDialog from "../../components/ConfirmDialog";
 import { deleteExpenseById } from "../../services/expense-service";
 
 const ExpenseDetails = () => {
+  const navigate = useNavigate();
   const { expenseId } = useParams();
   const [showDialog, setShowDialog] = useState<boolean>(false);
 
@@ -44,7 +45,12 @@ const ExpenseDetails = () => {
         >
           Delete
         </button>
-        <button className="btn btn-sm btn-warning mx-2">Edit</button>
+        <button
+          className="btn btn-sm btn-warning mx-2"
+          onClick={() => navigate(`/edit/${expenseId}`)}
+        >
+          Edit
+        </button>
         <Link className="btn btn-sm btn-secondary" to="/">
           Back
         </Link>

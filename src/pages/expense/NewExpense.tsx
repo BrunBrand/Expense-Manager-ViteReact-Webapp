@@ -3,28 +3,50 @@ import type { Expense } from "../../model/Expense";
 import expenseValidationSchema from "../../validation/expenseValidationSchema";
 import Dropdown from "../../components/Dropdown";
 import { expenseCategories } from "../../validation/AppConstants";
-import { saveOrUpdateExpense } from "../../services/expense-service";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {
+  getExpenseById,
+  saveOrUpdateExpense,
+} from "../../services/expense-service";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 const NewExpense = () => {
   const navigate = useNavigate();
+  const { expenseId } = useParams<{ expenseId: string }>();
   const [error, setErrors] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [initialValues, setInitialValues] = useState<Expense>({
+    name: "",
+    amount: 0,
+    note: "",
+    category: "",
+    date: new Date().toISOString().split("T")[0],
+  });
+
+  useEffect(() => {
+    if (expenseId) {
+      setIsLoading(true);
+      getExpenseById(expenseId)
+        .then((response) => {
+          if (response && response.data) {
+            setInitialValues(response.data);
+          }
+        })
+        .catch((error) => setErrors(error.message))
+        .finally(() => setIsLoading(false));
+    }
+  }, [expenseId]);
 
   const formik = useFormik({
-    initialValues: {
-      name: "",
-      amount: 0,
-      note: "",
-      category: "",
-      date: new Date().toISOString().split("T")[0],
-    },
+    initialValues,
+    enableReinitialize: true,
     onSubmit: (values: Expense) => {
       saveOrUpdateExpense(values)
         .then((response) => {
-          console.log(response);
           if (response && response.status === 201) {
             navigate("/");
+          } else if (response && response.status === 200) {
+            navigate(`/view/${expenseId}`);
           }
         })
         .catch((error) => {
